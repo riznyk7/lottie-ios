@@ -6,21 +6,16 @@
 //
 
 import Foundation
-import CoreGraphics
-#if os(iOS) || os(tvOS) || os(watchOS)
-import UIKit
+#if os(OSX)
+import AppKit
 
 /**
- An `AnimationImageProvider` that provides images by name from a specific bundle.
- The BundleImageProvider is initialized with a bundle and an optional searchPath.
+ Provides an image for a lottie animation from a provided Bundle.
  */
 public class BundleImageProvider: AnimationImageProvider {
   
-  static var cache = [String: UIImage]()
-    
   let bundle: Bundle
   let searchPath: String?
-    
   
   /**
    Initializes an image provider with a bundle and an optional subpath.
@@ -38,16 +33,12 @@ public class BundleImageProvider: AnimationImageProvider {
   }
   
   public func imageForAsset(asset: ImageAsset) -> CGImage? {
-    let uniqueId = (searchPath ?? "") + asset.directory + asset.name + asset.id
-    if let image = BundleImageProvider.cache[uniqueId] {
-        return image.cgImage
-    }
     
     if asset.name.hasPrefix("data:"),
       let url = URL(string: asset.name),
       let data = try? Data(contentsOf: url),
-      let image = UIImage(data: data) {
-      return image.cgImage
+      let image = NSImage(data: data) {
+      return image.CGImage
     }
     
     let imagePath: String?
@@ -76,14 +67,13 @@ public class BundleImageProvider: AnimationImageProvider {
       }
     }
     
-    guard let foundPath = imagePath, let image = UIImage(contentsOfFile: foundPath) else {
+    guard let foundPath = imagePath, let image = NSImage(contentsOfFile: foundPath) else {
       /// No image found.
       return nil
     }
-    
-    BundleImageProvider.cache[uniqueId] = image
-    return image.cgImage
+    return image.CGImage
   }
   
 }
+
 #endif
