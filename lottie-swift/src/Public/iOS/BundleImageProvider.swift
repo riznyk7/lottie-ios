@@ -16,8 +16,11 @@ import UIKit
  */
 public class BundleImageProvider: AnimationImageProvider {
   
+  static var cache = [String: UIImage]()
+    
   let bundle: Bundle
   let searchPath: String?
+    
   
   /**
    Initializes an image provider with a bundle and an optional subpath.
@@ -35,6 +38,10 @@ public class BundleImageProvider: AnimationImageProvider {
   }
   
   public func imageForAsset(asset: ImageAsset) -> CGImage? {
+    let uniqueId = (searchPath ?? "") + asset.directory + asset.name + asset.id
+    if let image = BundleImageProvider.cache[uniqueId] {
+        return image.cgImage
+    }
     
     if asset.name.hasPrefix("data:"),
       let url = URL(string: asset.name),
@@ -73,6 +80,8 @@ public class BundleImageProvider: AnimationImageProvider {
       /// No image found.
       return nil
     }
+    
+    BundleImageProvider.cache[uniqueId] = image
     return image.cgImage
   }
   
